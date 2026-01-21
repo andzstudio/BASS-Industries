@@ -10,9 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/split-type"></script>
@@ -131,12 +129,6 @@
             50% { transform: translateY(-5px); }
         }
 
-        @keyframes bgPulse {
-            0% { background-color: var(--card-bg); }
-            50% { background-color: rgba(255,255,255,0.03); }
-            100% { background-color: var(--card-bg); }
-        }
-
         .premium-card {
             position: relative;
             background: var(--card-bg);
@@ -213,6 +205,7 @@
             gap: 10vw;
             padding-left: 10vw;
             width: fit-content;
+            flex-wrap: nowrap;
         }
         .review-panel {
             width: 60vw;
@@ -226,6 +219,7 @@
             border-left: 1px solid var(--border);
             padding-left: 4rem;
             border-radius: var(--radius-card);
+            flex-shrink: 0;
         }
         .review-panel.active { opacity: 1; transform: scale(1.02); }
         .review-quote {
@@ -322,7 +316,7 @@
         <section class="h-screen w-full relative flex items-center justify-center overflow-hidden">
             <div class="hero-video-container">
                 <video autoplay loop muted playsinline>
-                    <source src="https://videos.pexels.com/video-files/7578552/7578552-uhd_2560_1440_30fps.mp4" type="video/mp4">
+                    <source src="https://videos.pexels.com/video-files/7578552/7578552-hd_1920_1080_30fps.mp4" type="video/mp4">
                 </video>
             </div>
             <div class="hero-overlay"></div>
@@ -713,35 +707,38 @@
             });
         });
 
-        const reviewSection = document.querySelector(".reviews-section");
-        const reviewTrack = document.querySelector(".reviews-track");
-        
-        if(window.innerWidth > 768) {
-            let scrollTween = gsap.to(reviewTrack, {
-                x: () => -(reviewTrack.scrollWidth - window.innerWidth),
-                ease: "none",
-                scrollTrigger: {
-                    trigger: reviewSection,
-                    pin: true,
-                    scrub: 1,
-                    end: () => "+=" + reviewTrack.scrollWidth,
-                    invalidateOnRefresh: true
-                }
-            });
-
-            gsap.utils.toArray('.review-panel').forEach(panel => {
-                ScrollTrigger.create({
-                    trigger: panel,
-                    containerAnimation: scrollTween,
-                    start: "center center",
-                    end: "center center",
-                    onEnter: () => panel.classList.add('active'),
-                    onLeave: () => panel.classList.remove('active'),
-                    onEnterBack: () => panel.classList.add('active'),
-                    onLeaveBack: () => panel.classList.remove('active')
+        ScrollTrigger.matchMedia({
+            "(min-width: 768px)": function() {
+                const track = document.querySelector(".reviews-track");
+                const section = document.querySelector(".reviews-section");
+                
+                let scrollTween = gsap.to(track, {
+                    x: () => -(track.scrollWidth - window.innerWidth),
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: section,
+                        pin: true,
+                        scrub: 1,
+                        end: () => "+=" + (track.scrollWidth - window.innerWidth),
+                        invalidateOnRefresh: true,
+                        anticipatePin: 1
+                    }
                 });
-            });
-        }
+
+                gsap.utils.toArray('.review-panel').forEach(panel => {
+                    ScrollTrigger.create({
+                        trigger: panel,
+                        containerAnimation: scrollTween,
+                        start: "center center",
+                        end: "center center",
+                        onEnter: () => panel.classList.add('active'),
+                        onLeave: () => panel.classList.remove('active'),
+                        onEnterBack: () => panel.classList.add('active'),
+                        onLeaveBack: () => panel.classList.remove('active')
+                    });
+                });
+            }
+        });
 
         const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', e => gsap.to(cursor, {x: e.clientX, y: e.clientY, duration: 0.1}));
